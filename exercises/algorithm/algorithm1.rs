@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -29,13 +28,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: std::cmp::PartialOrd + std::fmt::Display> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: std::cmp::PartialOrd + std::fmt::Display> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -69,15 +68,49 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+
+    pub fn merge(list_a: LinkedList<T>, list_b: LinkedList<T>) -> Self
+    where
+        T: Clone, // Keep this if you still need to compare values
+    {
+        let mut ret = LinkedList::<T>::new();
+        let mut ia = list_a.start;
+        let mut ib = list_b.start;
+        let next = |i: Option<NonNull<Node<T>>>| unsafe { (*i.unwrap().as_ptr()).next };
+
+        while ia.is_some() || ib.is_some() {
+            let add_a: bool;
+
+            match (ia, ib) {
+                (Some(na), Some(nb)) => {
+                    let va = unsafe { &(*na.as_ptr()).val };
+                    let vb = unsafe { &(*nb.as_ptr()).val };
+                    add_a = va <= vb;
+                }
+                (Some(na), None) => {
+                    add_a = true;
+                }
+                (None, Some(nb)) => {
+                    add_a = false;
+                }
+                (None, None) => break,
+            }
+
+            if add_a {
+                let node = unsafe { Box::from_raw(ia.unwrap().as_ptr()) };
+                ret.add(node.val);
+                ia = next(ia);
+            } else {
+                let node = unsafe { Box::from_raw(ib.unwrap().as_ptr()) };
+                ret.add(node.val);
+                ib = next(ib);
+            }
         }
-	}
+
+        ret
+    }
+
+
 }
 
 impl<T> Display for LinkedList<T>

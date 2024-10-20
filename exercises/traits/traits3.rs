@@ -9,13 +9,8 @@
 // hint.
 
 pub trait Licensed {
-    fn licensing_info(&self) -> String;
-}
-
-impl Default for Licensed {
-
     fn licensing_info(&self) -> String {
-        self.version_number
+        String::from("Some information")
     }
 }
 
